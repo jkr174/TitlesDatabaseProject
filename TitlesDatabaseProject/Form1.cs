@@ -26,7 +26,7 @@ namespace TitlesDatabaseProject
         {
             
             booksConnection = new SqlConnection("Server=(localdb)\\MSSQLLocalDB;"
-                                    + "AttachDbFilename=C:\\VCSDB\\Databases\\SQLBooksDB.mdf;"
+                                    + "AttachDbFilename=C:\\Users\\jromo021627\\Documents\\TitlesDatabaseProject\\Databases;"
                                     + "Integrated Security=True;"
                                     + "Connect Timeout=30;");
             booksConnection.Open();
