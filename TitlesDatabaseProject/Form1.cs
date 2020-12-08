@@ -121,10 +121,10 @@ namespace TitlesDatabaseProject
                 DataTable titlesTables = new DataTable();
                 titlesAdapter.Fill(titlesTables);
 
-                txtTitle.DataBindings.Add("Text", titlesTables, "Title");
+                /*txtTitle.DataBindings.Add("Text", titlesTables, "Title");
                 txtYearPublished.DataBindings.Add("Text", titlesTables, "Year_Published");
                 txtISBN.DataBindings.Add("Text", titlesTables, "ISBN");
-                txtPubID.DataBindings.Add("Text", titlesTables, "PubID");
+                txtPubID.DataBindings.Add("Text", titlesTables, "PubID");*/
 
                 titlesManager = (CurrencyManager)
                     BindingContext[titlesTables];
@@ -158,7 +158,7 @@ namespace TitlesDatabaseProject
                 string message = "Successfully connected to " + database + " file.";
                 string caption = "Success!";
 
-                btnConnect.Enabled = false;
+                //btnConnect.Enabled = false;
 
                 MessageBox.Show(message,
                     caption,
