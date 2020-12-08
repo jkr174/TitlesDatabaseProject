@@ -1,7 +1,14 @@
 ﻿/* Jovany Romo
  * 12/1/20
  * Data Binding Branch
- * 
+ * Summary:     Finally added proper error handling, that way it exits gracefully instead of crashing. 
+ *              Also added a dialog method that lets you choose the path of the database file. 
+ *          
+ *  Inputs:     When the user clicks on Connect, 
+ *              it opens a dialog box to select the database file.
+ *  
+ *  Outputs:    If there is an error, instead of the program crashing, 
+ *              it allows you to try and reconnect to the database file.
  */
 
 using System;
@@ -58,16 +65,51 @@ namespace TitlesDatabaseProject
         {
             this.Close();
         }
-
+        /// <summary>
+        /// btnConnect_Click class
+        /// 
+        /// Summary:    When the user clicks on the connect button, 
+        ///             it allows them to select the database file.
+        /// 
+        /// Inputs:     User selects the database file.
+        /// Outputs:    Should allow the program to access the database, 
+        ///             if not, it will give you an error message, 
+        ///             and it allows you to try to select the file again.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnConnect_Click(object sender, EventArgs e)
         {
             bool canAccessDB = false;
-            var database = "SQLBooksDB.mdf";
+            string database = "SQLBooksDB.mdf";
 
+            string fileContent = string.Empty;
+            string filePath = string.Empty;
+            // Allows for the user to locate the database file.
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "mdf files(*.mdf)|*.mdf";
+                openFileDialog.FilterIndex = 1;
+                openFileDialog.RestoreDirectory = true;
+                openFileDialog.Multiselect = false;
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    filePath = openFileDialog.FileName;
+
+                    var fileStream = openFileDialog.OpenFile();
+
+                    using (StreamReader reader = new StreamReader(fileStream))
+                    {
+                        fileContent = reader.ReadToEnd();
+                    }
+                }
+            }
+            // Try catch block to allow the program to handle errors more gracefully instead of just crashing.
             try
             {
                 booksConnection = new SqlConnection("Server=(localdb)\\MSSQLLocalDB;"
-                                    + "AttachDbFilename=|DataDirectory|\\" + database + ";"
+                                    + "AttachDbFilename=" + filePath + ";"
                                     + "Integrated Security=True;"
                                     + "Connect Timeout=30;");
 
@@ -98,10 +140,11 @@ namespace TitlesDatabaseProject
             }
             catch
             {
+                // Error caught
                 if (!canAccessDB)
                 {
-                    string message = "Cannot connect to database. Please check if " + database + " is in the bin folder.";
-                    string caption = "Cannot find " + database + " file!";
+                    string message = "Cannot connect to database. Please check if " + database + " is selected.";
+                    string caption = "Cannot connect to " + database + " file!";
                     DialogResult result = MessageBox.Show(message,
                         caption,
                         MessageBoxButtons.OK,
@@ -111,8 +154,10 @@ namespace TitlesDatabaseProject
             }
             if (canAccessDB == true)
             {
+                // Success
                 string message = "Successfully connected to " + database + " file.";
                 string caption = "Success!";
+
                 btnConnect.Enabled = false;
 
                 MessageBox.Show(message,
