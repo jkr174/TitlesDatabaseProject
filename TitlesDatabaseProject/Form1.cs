@@ -1,14 +1,8 @@
 ﻿/* Jovany Romo
  * 12/1/20
  * Data Binding Branch
- * Summary:     Finally added proper error handling, that way it exits gracefully instead of crashing. 
- *              Also added a dialog method that lets you choose the path of the database file. 
- *          
- *  Inputs:     When the user clicks on Connect, 
- *              it opens a dialog box to select the database file.
- *  
- *  Outputs:    If there is an error, instead of the program crashing, 
- *              it allows you to try and reconnect to the database file.
+ * Summary:     Finally finished the 3-2 SQL assignment. 
+ *              Now uses the connect button so that the program can error handle gracefully.
  */
 
 using System;
@@ -28,8 +22,6 @@ namespace TitlesDatabaseProject
 {
     public partial class frmTitles : Form
     {
-        SqlConnection booksConnection;
-        CurrencyManager titlesManager;
 
         public frmTitles()
         {
@@ -41,26 +33,6 @@ namespace TitlesDatabaseProject
             
         }
 
-        private void btnFirst_Click(object sender, EventArgs e)
-        {
-            titlesManager.Position = 0;
-        }
-
-        private void btnPrevious_Click(object sender, EventArgs e)
-        {
-            titlesManager.Position--;
-        }
-
-        private void btnNext_Click(object sender, EventArgs e)
-        {
-            titlesManager.Position++;
-        }
-
-        private void btnLast_Click(object sender, EventArgs e)
-        {
-            titlesManager.Position = titlesManager.Count - 1;
-        }
-
         private void btnExit_Click(object sender, EventArgs e)
         {
             this.Close();
@@ -68,103 +40,39 @@ namespace TitlesDatabaseProject
         /// <summary>
         /// btnConnect_Click class
         /// 
-        /// Summary:    When the user clicks on the connect button, 
-        ///             it allows them to select the database file.
+        /// Summary:    Should allow the program to exit gracefully if there is an error.
         /// 
-        /// Inputs:     User selects the database file.
-        /// Outputs:    Should allow the program to access the database, 
-        ///             if not, it will give you an error message, 
-        ///             and it allows you to try to select the file again.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void btnConnect_Click(object sender, EventArgs e)
         {
-            bool canAccessDB = false;
-            string database = "SQLBooksDB.mdf";
-
-            string fileContent = string.Empty;
-            string filePath = string.Empty;
-            // Allows for the user to locate the database file.
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
-            {
-                openFileDialog.Filter = "mdf files(*.mdf)|*.mdf";
-                openFileDialog.FilterIndex = 1;
-                openFileDialog.RestoreDirectory = true;
-                openFileDialog.Multiselect = false;
-
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    filePath = openFileDialog.FileName;
-
-                    var fileStream = openFileDialog.OpenFile();
-
-                    using (StreamReader reader = new StreamReader(fileStream))
-                    {
-                        fileContent = reader.ReadToEnd();
-                    }
-                }
-            }
-            // Try catch block to allow the program to handle errors more gracefully instead of just crashing.
+            bool success = false;
             try
             {
-                booksConnection = new SqlConnection("Server=(localdb)\\MSSQLLocalDB;"
-                                    + "AttachDbFilename=" + filePath + ";"
-                                    + "Integrated Security=True;"
-                                    + "Connect Timeout=30;");
-
-                booksConnection.Open();
-
-                SqlCommand titlesCommand = new SqlCommand("Select * from Titles", booksConnection);
-                SqlDataAdapter titlesAdapter = new SqlDataAdapter();
-                titlesAdapter.SelectCommand = titlesCommand;
-                DataTable titlesTables = new DataTable();
-                titlesAdapter.Fill(titlesTables);
-
-                /*txtTitle.DataBindings.Add("Text", titlesTables, "Title");
-                txtYearPublished.DataBindings.Add("Text", titlesTables, "Year_Published");
-                txtISBN.DataBindings.Add("Text", titlesTables, "ISBN");
-                txtPubID.DataBindings.Add("Text", titlesTables, "PubID");*/
-
-                titlesManager = (CurrencyManager)
-                    BindingContext[titlesTables];
-
-                booksConnection.Close();
-
-                booksConnection.Dispose();
-                titlesCommand.Dispose();
-                titlesAdapter.Dispose();
-                titlesTables.Dispose();
-
-                canAccessDB = true;
+                this.titlesTableAdapter.Fill(this.sQLBooksDBDataSet.Titles);
+                success = true;
             }
             catch
             {
-                // Error caught
-                if (!canAccessDB)
+                if (!success)
                 {
-                    string message = "Cannot connect to database. Please check if " + database + " is selected.";
-                    string caption = "Cannot connect to " + database + " file!";
+                    string message = "The program was not able to connect to SQL, please check if SQL Express is installed, along with MSSM Studio. Ensure that SQLBooksDB.mdf is located at the Working folder.";
+                    string caption = "Cannot connect to SQL!";
                     DialogResult result = MessageBox.Show(message,
                         caption,
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
                 }
-                
             }
-            if (canAccessDB == true)
-            {
-                // Success
-                string message = "Successfully connected to " + database + " file.";
-                string caption = "Success!";
+        }
 
-                //btnConnect.Enabled = false;
+        private void titlesBindingNavigatorSaveItem_Click(object sender, EventArgs e)
+        {
+            this.Validate();
+            this.titlesBindingSource.EndEdit();
+            this.tableAdapterManager.UpdateAll(this.sQLBooksDBDataSet);
 
-                MessageBox.Show(message,
-                    caption,
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
-            }
         }
     }
 }
