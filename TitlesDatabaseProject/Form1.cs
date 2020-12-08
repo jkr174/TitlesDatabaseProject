@@ -22,7 +22,7 @@ namespace TitlesDatabaseProject
     public partial class frmTitles : Form
     {
         SqlConnection booksConnection;
-
+        CurrencyManager titlesManager;
 
         public frmTitles()
         {
@@ -31,16 +31,46 @@ namespace TitlesDatabaseProject
 
         private void frmTitles_Load(object sender, EventArgs e)
         {
+            
+        }
+
+        private void btnFirst_Click(object sender, EventArgs e)
+        {
+            titlesManager.Position = 0;
+        }
+
+        private void btnPrevious_Click(object sender, EventArgs e)
+        {
+            titlesManager.Position--;
+        }
+
+        private void btnNext_Click(object sender, EventArgs e)
+        {
+            titlesManager.Position++;
+        }
+
+        private void btnLast_Click(object sender, EventArgs e)
+        {
+            titlesManager.Position = titlesManager.Count - 1;
+        }
+
+        private void btnExit_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void btnConnect_Click(object sender, EventArgs e)
+        {
             bool canAccessDB = false;
             var database = "SQLBooksDB.mdf";
 
-            booksConnection = new SqlConnection("Server=(localdb)\\MSSQLLocalDB;"
+            try
+            {
+                booksConnection = new SqlConnection("Server=(localdb)\\MSSQLLocalDB;"
                                     + "AttachDbFilename=|DataDirectory|\\" + database + ";"
                                     + "Integrated Security=True;"
                                     + "Connect Timeout=30;");
 
-            try
-            {
                 booksConnection.Open();
 
                 SqlCommand titlesCommand = new SqlCommand("Select * from Titles", booksConnection);
@@ -53,6 +83,9 @@ namespace TitlesDatabaseProject
                 txtYearPublished.DataBindings.Add("Text", titlesTables, "Year_Published");
                 txtISBN.DataBindings.Add("Text", titlesTables, "ISBN");
                 txtPubID.DataBindings.Add("Text", titlesTables, "PubID");
+
+                titlesManager = (CurrencyManager)
+                    BindingContext[titlesTables];
 
                 booksConnection.Close();
 
@@ -67,14 +100,25 @@ namespace TitlesDatabaseProject
             {
                 if (!canAccessDB)
                 {
-                    const string message = "Cannot connect to database. Please check if SQLBooksDB.mdf is in the bin folder!";
-                    const string caption = "Cannot find database!";
-
-                    MessageBox.Show(message,
+                    string message = "Cannot connect to database. Please check if " + database + " is in the bin folder.";
+                    string caption = "Cannot find " + database + " file!";
+                    DialogResult result = MessageBox.Show(message,
                         caption,
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
                 }
+                
+            }
+            if (canAccessDB == true)
+            {
+                string message = "Successfully connected to " + database + " file.";
+                string caption = "Success!";
+                btnConnect.Enabled = false;
+
+                MessageBox.Show(message,
+                    caption,
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
             }
         }
     }
