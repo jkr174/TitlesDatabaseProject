@@ -32,15 +32,37 @@ namespace TitlesDatabaseProject
         private void frmTitles_Load(object sender, EventArgs e)
         {
             bool canAccessDB = false;
-            var database = "SQLBooksDB.mdf";
 
-            booksConnection = new SqlConnection("Server=(localdb)\\MSSQLLocalDB;"
-                                    + "AttachDbFilename=|DataDirectory|\\" + database + ";"
-                                    + "Integrated Security=True;"
-                                    + "Connect Timeout=30;");
+            string fileContent = string.Empty;
+            string filePath = string.Empty;
+            // Allows for the user to locate the database file.
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "mdf files(*.mdf)|*.mdf";
+                openFileDialog.FilterIndex = 1;
+                openFileDialog.RestoreDirectory = true;
+                openFileDialog.Multiselect = false;
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    filePath = openFileDialog.FileName;
+
+                    var fileStream = openFileDialog.OpenFile();
+
+                    using (StreamReader reader = new StreamReader(fileStream))
+                    {
+                        fileContent = reader.ReadToEnd();
+                    }
+                }
+            }
 
             try
             {
+                booksConnection = new SqlConnection("Server=(localdb)\\MSSQLLocalDB;"
+                                    + "AttachDbFilename=" + filePath + ";"
+                                    + "Integrated Security=True;"
+                                    + "Connect Timeout=30;");
+
                 booksConnection.Open();
 
                 SqlCommand titlesCommand = new SqlCommand("Select * from Titles", booksConnection);
@@ -76,6 +98,11 @@ namespace TitlesDatabaseProject
                         MessageBoxIcon.Error);
                 }
             }
+        }
+
+        private void txtPubID_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

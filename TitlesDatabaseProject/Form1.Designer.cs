@@ -113,6 +113,7 @@
             this.txtPubID.ReadOnly = true;
             this.txtPubID.Size = new System.Drawing.Size(295, 37);
             this.txtPubID.TabIndex = 11;
+            this.txtPubID.TextChanged += new System.EventHandler(this.txtPubID_TextChanged);
             // 
             // frmTitles
             // 
