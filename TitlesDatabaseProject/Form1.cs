@@ -57,7 +57,7 @@ namespace TitlesDatabaseProject
             {
                 if (!success)
                 {
-                    string message = "The program was not able to connect to SQL, please check if SQL Express is installed, along with MSSM Studio. Ensure that SQLBooksDB.mdf is located at the Working folder.";
+                    string message = "The program was not able to connect to SQL, please check if SQL Express is installed, along with MSSM Studio. Ensure that SQLBooksDB.mdf is located at the Working folder and no other program is using it.";
                     string caption = "Cannot connect to SQL!";
                     DialogResult result = MessageBox.Show(message,
                         caption,
