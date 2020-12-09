@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
 
 namespace TitlesDatabaseProject
 {
@@ -28,38 +29,77 @@ namespace TitlesDatabaseProject
 
         private void frmTitles_Load(object sender, EventArgs e)
         {
+            bool canAccessDB = false;
+            //string fileNameDB = "SQLNWindDB.mdf";
 
-            NWindConnection = new SqlConnection("Data Source=.\\SQLEXPRESS;" +
-                "AttachDbFilename=c:\\VCSDB\\Working\\SQLNWindDB.mdf;" +
-                "integrated Security=True;" +
-                "Connect Timeout=30;" +
-                "User Instance=True");
+            string fileContent = string.Empty;
+            string filePath = string.Empty;
+            using(OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "mdf files(*.mdf)|*.mdf";
+                openFileDialog.FilterIndex = 1;
+                openFileDialog.RestoreDirectory = true;
+                openFileDialog.Multiselect = false;
 
-            NWindConnection.Open();
+                if(openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    filePath = openFileDialog.FileName;
 
-            customersCommand = new SqlCommand("SELECT * " +
-                "FROM Customers",
-                NWindConnection);
+                    var fileStream = openFileDialog.OpenFile();
 
-            customersAdapter = new SqlDataAdapter();
-            customersAdapter.SelectCommand = customersCommand;
-            customersTable = new DataTable();
-            customersAdapter.Fill(customersTable);
+                    using (StreamReader reader = new StreamReader(fileStream))
+                    {
+                        fileContent = reader.ReadToEnd();
+                    }
+                }
+            }
+            try
+            {
+                NWindConnection = new SqlConnection("Data Source=.\\SQLEXPRESS;" +
+                    "AttachDbFilename=c:\\VCSDB\\Working\\SQLNWindDB.mdf;" +
+                    "integrated Security=True;" +
+                    "Connect Timeout=30;" +
+                    "User Instance=True");
 
-            txtCustomerID.DataBindings.Add("Text", customersTable, "CustomerID");
-            txtCompanyName.DataBindings.Add("Text", customersTable, "CompanyName");
-            txtContactName.DataBindings.Add("Text", customersTable, "ContactName");
-            txtContactTitle.DataBindings.Add("Text", customersTable, "ContactTitle");
+                NWindConnection.Open();
 
-            customersManager = (CurrencyManager)
-                BindingContext[customersTable];
+                customersCommand = new SqlCommand("SELECT * " +
+                    "FROM Customers",
+                    NWindConnection);
 
-            NWindConnection.Close();
+                customersAdapter = new SqlDataAdapter();
+                customersAdapter.SelectCommand = customersCommand;
+                customersTable = new DataTable();
+                customersAdapter.Fill(customersTable);
 
-            NWindConnection.Dispose();
-            customersCommand.Dispose();
-            customersAdapter.Dispose();
-            customersTable.Dispose();
+                txtCustomerID.DataBindings.Add("Text", customersTable, "CustomerID");
+                txtCompanyName.DataBindings.Add("Text", customersTable, "CompanyName");
+                txtContactName.DataBindings.Add("Text", customersTable, "ContactName");
+                txtContactTitle.DataBindings.Add("Text", customersTable, "ContactTitle");
+
+                customersManager = (CurrencyManager)
+                    BindingContext[customersTable];
+
+                NWindConnection.Close();
+
+                NWindConnection.Dispose();
+                customersCommand.Dispose();
+                customersAdapter.Dispose();
+                customersTable.Dispose();
+                canAccessDB = true;
+            }
+            catch
+            {
+                if (!canAccessDB)
+                {
+                    string message = "Cannot connect to database. Please check if the database was selected.";
+                    string caption = "Cannot connect to file!";
+                    DialogResult result = MessageBox.Show(message,
+                        caption,
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
+            }
         }
 
         private void btnExit_Click(object sender, EventArgs e)
