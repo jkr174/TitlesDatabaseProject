@@ -36,10 +36,12 @@ namespace TitlesDatabaseProject
             string filePath = string.Empty;
             using(OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                openFileDialog.InitialDirectory = "C:\\VCSDB\\Working";
+                string CombinedPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "..\\..");
+
+                openFileDialog.InitialDirectory = System.IO.Path.GetFullPath(CombinedPath);
                 openFileDialog.Filter = "mdf files(*.mdf)|*.mdf";
                 openFileDialog.FilterIndex = 1;
-                openFileDialog.RestoreDirectory = true;
+                openFileDialog.RestoreDirectory = false;
                 openFileDialog.Multiselect = false;
 
                 if(openFileDialog.ShowDialog() == DialogResult.OK)
@@ -57,7 +59,7 @@ namespace TitlesDatabaseProject
             try
             {
                 NWindConnection = new SqlConnection("Data Source=.\\SQLEXPRESS;" +
-                    "AttachDbFilename=c:\\VCSDB\\Working\\SQLNWindDB.mdf;" +
+                    "AttachDbFilename=" + filePath + ";" +
                     "integrated Security=True;" +
                     "Connect Timeout=30;" +
                     "User Instance=True");
