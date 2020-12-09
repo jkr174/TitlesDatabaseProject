@@ -36,6 +36,7 @@ namespace TitlesDatabaseProject
             string filePath = string.Empty;
             using(OpenFileDialog openFileDialog = new OpenFileDialog())
             {
+                openFileDialog.InitialDirectory = "C:\\VCSDB\\Working";
                 openFileDialog.Filter = "mdf files(*.mdf)|*.mdf";
                 openFileDialog.FilterIndex = 1;
                 openFileDialog.RestoreDirectory = true;
